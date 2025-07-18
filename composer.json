@@ -1,0 +1,11 @@
+{
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "require": {
+        "flightphp/core": "^3.16",
+        "ronanchilvers/utility": "^2.0"
+    }
+}
