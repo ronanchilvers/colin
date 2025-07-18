@@ -257,23 +257,6 @@ createApp({
       "In Progress": [],
       "Done": []
     });
-    board["Todo"].push(
-        {
-            id: Date.now() + Math.random(),
-            title: "Task card 1",
-            content: "Card 1 content for testing with"
-        },
-        {
-            id: Date.now() + Math.random(),
-            title: "Task card 2",
-            content: "Card 2 content for testing with"
-        },
-        {
-            id: Date.now() + Math.random(),
-            title: "Task card 3",
-            content: "Card 3 content for testing with"
-        },
-    )
 
     const columns = ref(["Todo", "In Progress", "Done"]);
 
@@ -286,6 +269,27 @@ createApp({
 
     const editingCard = ref(null);
     const newColumnName = ref("");
+
+    async function loadBoard() {
+      try {
+        const response = await fetch('/api/board');
+        if (!response.ok) throw new Error("Failed to fetch board data");
+        const data = await response.json();
+
+        if (data.columns && data.board) {
+          columns.value = data.columns;
+          Object.keys(data.board).forEach(col => {
+            board[col] = data.board[col];
+            newCard[col] = { title: "", isAdding: false };
+          });
+        }
+        nextTick(() => {
+          Object.keys(board).forEach(initSortable);
+        });
+      } catch (error) {
+        console.error("Error loading board:", error);
+      }
+    }
 
     function addCard(column) {
       const title = newCard[column].title.trim();
@@ -368,7 +372,8 @@ createApp({
     }
 
     onMounted(() => {
-      Object.keys(board).forEach(initSortable);
+      loadBoard();
+
       new Sortable(document.getElementById("column-container"), {
         animation: 150,
         handle: ".handle",
