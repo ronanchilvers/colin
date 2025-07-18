@@ -13,4 +13,9 @@ Flight::route(
     new \App\Actions\Index()
 );
 
+Flight::route(
+    "/api/board",
+    new \App\Actions\Api\Boards()
+);
+
 Flight::start();
