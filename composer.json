@@ -10,5 +10,8 @@
     },
     "scripts": {
         "serve": "cd web && /usr/bin/env php -S localhost:8001 index.php"
+    },
+    "config": {
+        "process-timeout" : 0
     }
 }

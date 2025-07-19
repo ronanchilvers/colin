@@ -32,7 +32,7 @@ class Factory
         return new Template($path);
     }
 
-    public function exists(string $template): bool
+    public static function exists(string $template): bool
     {
         $path = File::join(
             static::$baseDir,

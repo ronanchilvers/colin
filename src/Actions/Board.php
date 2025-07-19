@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Actions;
 
-use App\Actions\Traits\TemplateAction;
 use App\ActionInterface;
+use App\Actions\Traits\TemplateAction;
 
-class Index implements ActionInterface
+class Board implements ActionInterface
 {
     use TemplateAction;
 }
