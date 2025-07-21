@@ -16,18 +16,28 @@ if (PHP_SAPI == 'cli-server') {
 
 Factory::setBaseDir(__DIR__ . '/../templates');
 
-Flight::route(
-    "/",
-    new \App\Actions\Index()
-);
-Flight::route(
-    "/board",
-    new \App\Actions\Board()
-);
+$routes = [
+    // Frontend
+    'GET /' => new \App\Actions\Index(),
+    'GET /board/@id' => new \App\Actions\Board(),
 
-Flight::route(
-    "/api/board",
-    new \App\Actions\Api\Board()
-);
+    // API
+    'GET /api/board/@id' => new \App\Actions\Api\Board\Index(),
+    'POST /api/board' => new \App\Actions\Api\Board\Create(),
+];
+foreach ($routes as $endpoint => $action) {
+    Flight::route(
+        $endpoint,
+        $action
+    );
+}
+// Flight::route(
+//     "/api/board",
+//     new \App\Actions\Api\Board\Index()
+// );
+// Flight::route(
+//     "/api/board",
+//     new \App\Actions\Api\Board\Index()
+// );
 
 Flight::start();

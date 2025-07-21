@@ -2,18 +2,23 @@
 
 declare(strict_types=1);
 
-namespace App\Actions\Api;
+namespace App\Actions\Api\Board;
 
-use App\ActionInterface;
-use App\Template\Factory;
 use Flight;
+use Ramsey\Uuid\Uuid;
 
-class Board implements ActionInterface
+class Index
 {
-    public function __invoke()
+    public function __invoke(string $id)
     {
+        if (!Uuid::isValid($id)) {
+            Flight::jsonHalt([
+                'ok' => false,
+                'error' => 'Invalid board id'
+            ]);
+        }
         $cards = [];
-        for ($i = 1; $i < 10; $i++)
+        for ($i = 1; $i < 3; $i++)
         {
             $cards[] = [
                 'id' => $i,

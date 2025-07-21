@@ -217,11 +217,14 @@
         </div>
       </div>
       <div class="add-card">
-        <div v-if="newCard[column].isAdding">
-          <input v-model="newCard[column].title" @keyup.enter="addCard(column)" @blur="cancelAdd(column)" placeholder="Card title..." />
-        </div>
-        <div v-else>
-          <a href="#" @click.prevent="startAdding(column)">Add a card...</a>
+        <div>
+          <input
+            placeholder="Add a card..."
+            autocomplete="off"
+            v-model="newCard[column].title"
+            @focus="startAdding(column)"
+            @keyup.enter="addCard(column)"
+            @blur="cancelAdd(column)" />
         </div>
       </div>
     </div>

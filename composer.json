@@ -6,7 +6,8 @@
     },
     "require": {
         "flightphp/core": "^3.16",
-        "ronanchilvers/utility": "^2.0"
+        "ronanchilvers/utility": "^2.0",
+        "ramsey/uuid": "^4.9"
     },
     "scripts": {
         "serve": "cd web && /usr/bin/env php -S localhost:8001 index.php"
