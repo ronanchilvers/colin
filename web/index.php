@@ -25,6 +25,9 @@ $routes = [
     'GET /api/board/@id' => new \App\Actions\Api\Board\Index(),
     'POST /api/board' => new \App\Actions\Api\Board\Create(),
 
+    // Colummn API
+    'POST /api/column' => new \App\Actions\Api\Column\Create(),
+
     // Card API
     // 'GET /api/card/@id' => new \App\Actions\Api\Card\Index(),
     'POST /api/card' => new \App\Actions\Api\Card\Create(),

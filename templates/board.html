@@ -228,7 +228,7 @@
     </div>
     <div class="column add-column">
       <div class="column__header">
-        <input v-model="newColumnName" placeholder="Add a column..." @keyup.enter="addColumn"/>
+        <input v-model="newColumnLabel" placeholder="Add a column..." @keyup.enter="addColumn"/>
       </div>
     </div>
   </div>
@@ -258,6 +258,7 @@ const { createApp, reactive, ref, onMounted, nextTick } = Vue;
 
 createApp({
   setup() {
+    const boardId = ref(null);
     const board = reactive({});
 
     const columns = ref([]);
@@ -265,12 +266,10 @@ createApp({
     const newCard = reactive({});
 
     const editingCard = ref(null);
-    const newColumnName = ref("");
+    const newColumnLabel = ref("");
 
-    async function loadBoard() {
+    async function loadBoard(boardId) {
       try {
-        const urlParts = window.location.pathname.split('/');
-        const boardId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
         const response = await fetch(`/api/board/${boardId}`);
         if (!response.ok) throw new Error("Failed to fetch board data");
         const data = await response.json();
@@ -290,18 +289,20 @@ createApp({
       }
     }
 
-    function addCard(columnId) {
-      const title = newCard[columnId].title.trim();
-      if (title) {
-        createCard(columnId, { title, content: "" }).then(cardWithId => {
-          console.log(cardWithId)
-          if (cardWithId) {
-            board[columnId].push(cardWithId);
-          }
+    async function createColumn(boardId, column) {
+      try {
+        const response = await fetch(`/api/column`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ board: boardId, ...column })
         });
+        if (!response.ok) throw new Error("Failed to save column");
+        const result = await response.json();
+        return { ...column, id: result.column.id };
+      } catch (error) {
+        console.error("Error saving column:", error);
+        return null;
       }
-      newCard[columnId].title = "";
-      newCard[columnId].isAdding = false;
     }
 
     async function createCard(columnId, card) {
@@ -318,34 +319,6 @@ createApp({
         console.error("Error saving card:", error);
         return null;
       }
-    }
-
-    function startAdding(columnId) {
-      newCard[columnId].isAdding = true;
-      nextTick(() => {
-        const inputs = document.querySelectorAll(`#list-${columnId} ~ .add-card input`);
-        if (inputs.length) inputs[0].focus();
-      });
-    }
-
-    function cancelAdd(columnId) {
-      newCard[columnId].title = "";
-      newCard[columnId].isAdding = false;
-    }
-
-    function openCard(columnId, index) {
-      editingCard.value = {
-        column: columnId,
-        index,
-        card: board[columnId][index]
-      };
-    }
-
-    function closeEditor() {
-      if (editingCard.value) {
-        updateCard(editingCard.value.column, editingCard.value.card);
-      }
-      editingCard.value = null;
     }
 
     async function updateCard(columnId, card) {
@@ -371,19 +344,62 @@ createApp({
       }
     }
 
+    function startAdding(columnId) {
+      newCard[columnId].isAdding = true;
+      nextTick(() => {
+        const inputs = document.querySelectorAll(`#list-${columnId} ~ .add-card input`);
+        if (inputs.length) inputs[0].focus();
+      });
+    }
+
+    function cancelAdd(columnId) {
+      newCard[columnId].title = "";
+      newCard[columnId].isAdding = false;
+    }
+
+    function addCard(columnId) {
+      const title = newCard[columnId].title.trim();
+      if (title) {
+        createCard(columnId, { title, content: "" }).then(cardWithId => {
+          if (cardWithId) {
+            board[columnId].push(cardWithId);
+          }
+        });
+      }
+      newCard[columnId].title = "";
+      newCard[columnId].isAdding = false;
+    }
+
+    function openCard(columnId, index) {
+      editingCard.value = {
+        column: columnId,
+        index,
+        card: board[columnId][index]
+      };
+    }
+
+    function closeEditor() {
+      if (editingCard.value) {
+        updateCard(editingCard.value.column, editingCard.value.card);
+      }
+      editingCard.value = null;
+    }
+
     function addColumn() {
-      const name = newColumnName.value.trim();
+      const name = newColumnLabel.value.trim();
       if (name) {
-        const id = name.toLowerCase().replace(/\s+/g, '-');
-        if (!board[id]) {
-          board[id] = [];
-          newCard[id] = { title: "", isAdding: false };
-          columns.value.push({ id, label: name });
-          newColumnName.value = "";
-          nextTick(() => {
-            initSortable(id);
-          });
-        }
+        createColumn(boardId.value, { label: name}).then(columnWithId => {
+          const id = columnWithId.id
+          if (!board[id]) {
+            board[id] = [];
+            newCard[id] = { title: "", isAdding: false };
+            columns.value.push({ id, label: name });
+            newColumnLabel.value = "";
+            nextTick(() => {
+              initSortable(id);
+            });
+          }
+        });
       }
     }
 
@@ -418,7 +434,9 @@ createApp({
     }
 
     onMounted(() => {
-      loadBoard();
+      const urlParts = window.location.pathname.split('/');
+      boardId.value = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+      loadBoard(boardId.value);
 
       new Sortable(document.getElementById("column-container"), {
         animation: 150,
@@ -435,7 +453,7 @@ createApp({
 
     return {
       columns, board, newCard, addCard, openCard, closeEditor, editingCard,
-      startAdding, cancelAdd, newColumnName, addColumn, removeColumn, canRemoveColumn,
+      startAdding, cancelAdd, newColumnLabel, addColumn, removeColumn, canRemoveColumn,
       createCard, updateCard, deleteCard
     };
   }

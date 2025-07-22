@@ -104,6 +104,7 @@ input, textarea {
     padding: 0.5rem;
     border-radius: 4px;
     font-family: sans-serif;
+    background-color: rgba(139, 149, 158, 0.1);
 }
 .modal__header input:focus,
 .modal__content textarea:focus {
