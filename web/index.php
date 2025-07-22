@@ -21,9 +21,13 @@ $routes = [
     'GET /' => new \App\Actions\Index(),
     'GET /board/@id' => new \App\Actions\Board(),
 
-    // API
+    // Board API
     'GET /api/board/@id' => new \App\Actions\Api\Board\Index(),
     'POST /api/board' => new \App\Actions\Api\Board\Create(),
+
+    // Card API
+    // 'GET /api/card/@id' => new \App\Actions\Api\Card\Index(),
+    'POST /api/card/@id' => new \App\Actions\Api\Card\Update(),
 ];
 foreach ($routes as $endpoint => $action) {
     Flight::route(

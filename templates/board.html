@@ -5,11 +5,9 @@
   <title>Kanban Board</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link href="https://unpkg.com/@csstools/normalize.css" rel="stylesheet" />
+  <link href="/css/normalize.css" rel="stylesheet" />
   <link rel="stylesheet" href="/css/base.css" />
   <link rel="stylesheet" href="/css/board.css" />
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <style>
     * {
         box-sizing: border-box;
@@ -253,6 +251,8 @@
   </div>
 </div>
 
+<script src="/js/vue.js"></script>
+<script src="/js/sortable.min.js"></script>
 <script>
 const { createApp, reactive, ref, onMounted, nextTick } = Vue;
 
@@ -278,7 +278,9 @@ createApp({
 
     async function loadBoard() {
       try {
-        const response = await fetch('/api/board');
+        const urlParts = window.location.pathname.split('/');
+        const boardId = urlParts[urlParts.length - 1] || urlParts[urlParts.length - 2];
+        const response = await fetch(`/api/board/${boardId}`);
         if (!response.ok) throw new Error("Failed to fetch board data");
         const data = await response.json();
 

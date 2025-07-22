@@ -21,7 +21,7 @@ class Index
         for ($i = 1; $i < 3; $i++)
         {
             $cards[] = [
-                'id' => $i,
+                'id' => Uuid::uuid7(),
                 'title' => "Card number {$i}",
                 'content' => "Lorem ipsum dolor sit, amet consectetur adipisicing elit. Repudiandae rem error illo, nulla quod voluptatum necessitatibus molestiae. In, esse iure quae sit, magni delectus repellendus est odio, dignissimos odit eius."
             ];

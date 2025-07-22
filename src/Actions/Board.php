@@ -7,6 +7,7 @@ namespace App\Actions;
 use App\Actions\Traits\TemplateAction;
 use Ramsey\Uuid\Uuid;
 use App\Template\Factory;
+use Flight;
 
 class Board
 {
