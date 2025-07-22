@@ -195,17 +195,17 @@
     </header>
 <div id="app">
   <div id="column-container" class="board">
-    <div class="column" v-for="column in columns" :key="column">
+    <div class="column" v-for="column in columns" :key="column.id">
       <div class="column__header">
         <h2 class="handle">
-            {{ column }}
+            {{ column.label }}
         </h2>
         <div class="column__control">
-            <button v-if="canRemoveColumn(column)" @click="removeColumn(column)" class="control__remove">X</button>
+            <button v-if="canRemoveColumn(column.id)" @click="removeColumn(column.id)" class="control__remove">X</button>
         </div>
       </div>
-      <div :id="`list-${column}`" class="column__content card-list">
-        <div v-for="(card, index) in board[column]" :key="card.id" class="card" @click="openCard(column, index)">
+      <div :id="`list-${column.id}`" class="column__content card-list">
+        <div v-for="(card, index) in board[column.id]" :key="card.id" class="card" @click="openCard(column.id, index)">
           <div class="card__header">
             <h3>{{ card.title }}</h3>
           </div>
@@ -219,10 +219,10 @@
           <input
             placeholder="Add a card..."
             autocomplete="off"
-            v-model="newCard[column].title"
-            @focus="startAdding(column)"
-            @keyup.enter="addCard(column)"
-            @blur="cancelAdd(column)" />
+            v-model="newCard[column.id].title"
+            @focus="startAdding(column.id)"
+            @keyup.enter="addCard(column.id)"
+            @blur="cancelAdd(column.id)" />
         </div>
       </div>
     </div>
@@ -258,20 +258,11 @@ const { createApp, reactive, ref, onMounted, nextTick } = Vue;
 
 createApp({
   setup() {
-    const board = reactive({
-      "Todo": [],
-      "In Progress": [],
-      "Done": []
-    });
+    const board = reactive({});
 
-    const columns = ref(["Todo", "In Progress", "Done"]);
+    const columns = ref([]);
 
-    const newCard = reactive({
-      "Todo": { title: "", isAdding: false },
-      "In Progress": { title: "", isAdding: false },
-      "Review": { title: "", isAdding: false },
-      "Done": { title: "", isAdding: false }
-    });
+    const newCard = reactive({});
 
     const editingCard = ref(null);
     const newColumnName = ref("");
@@ -284,66 +275,69 @@ createApp({
         if (!response.ok) throw new Error("Failed to fetch board data");
         const data = await response.json();
 
-        if (data.columns && data.board) {
-          columns.value = data.columns;
-          Object.keys(data.board).forEach(col => {
-            board[col] = data.board[col];
-            newCard[col] = { title: "", isAdding: false };
+        if (data.board.columns && data.board.board) {
+          columns.value = data.board.columns;
+          columns.value.forEach(col => {
+            board[col.id] = data.board.board[col.id] || [];
+            newCard[col.id] = { title: "", isAdding: false };
           });
         }
         nextTick(() => {
-          Object.keys(board).forEach(initSortable);
+          columns.value.forEach(col => initSortable(col.id));
         });
       } catch (error) {
         console.error("Error loading board:", error);
       }
     }
 
-    function addCard(column) {
-      const title = newCard[column].title.trim();
+    function addCard(columnId) {
+      const title = newCard[columnId].title.trim();
       if (title) {
-        const card = {
-          id: Date.now() + Math.random(),
-          title: title,
-          content: ""
-        };
-        board[column].push(card);
-        saveCard(column, card);
+        createCard(columnId, { title, content: "" }).then(cardWithId => {
+          console.log(cardWithId)
+          if (cardWithId) {
+            board[columnId].push(cardWithId);
+          }
+        });
       }
-      newCard[column].title = "";
-      newCard[column].isAdding = false;
+      newCard[columnId].title = "";
+      newCard[columnId].isAdding = false;
     }
 
-    async function saveCard(column, card) {
+    async function createCard(columnId, card) {
       try {
-        await fetch('/api/card', {
+        const response = await fetch(`/api/card`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ column, ...card })
+          body: JSON.stringify({ column: columnId, ...card })
         });
+        if (!response.ok) throw new Error("Failed to save card");
+        const result = await response.json();
+        return { ...card, id: result.card.id };
       } catch (error) {
         console.error("Error saving card:", error);
+        return null;
       }
     }
 
-    function startAdding(column) {
-      newCard[column].isAdding = true;
+    function startAdding(columnId) {
+      newCard[columnId].isAdding = true;
       nextTick(() => {
-        const inputs = document.querySelectorAll(`#list-${column} ~ .add-card input`);
+        const inputs = document.querySelectorAll(`#list-${columnId} ~ .add-card input`);
         if (inputs.length) inputs[0].focus();
       });
     }
 
-    function cancelAdd(column) {
-      newCard[column].title = "";
-      newCard[column].isAdding = false;
+    function cancelAdd(columnId) {
+      newCard[columnId].title = "";
+      newCard[columnId].isAdding = false;
     }
 
-    function openCard(column, index) {
+    function openCard(columnId, index) {
       editingCard.value = {
-        column,
+        column: columnId,
         index,
-        card: board[column][index]
+        card: board[columnId][index]
       };
     }
 
@@ -354,23 +348,23 @@ createApp({
       editingCard.value = null;
     }
 
-    async function updateCard(column, card) {
+    async function updateCard(columnId, card) {
       try {
         await fetch(`/api/card/${card.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ column, ...card })
+          body: JSON.stringify({ column: columnId, ...card })
         });
       } catch (error) {
         console.error("Error updating card:", error);
       }
     }
 
-    async function deleteCard(column, card) {
+    async function deleteCard(columnId, card) {
       try {
         await fetch(`/api/card/${card.id}`, { method: 'DELETE' });
-        const idx = board[column].findIndex(c => c.id === card.id);
-        if (idx !== -1) board[column].splice(idx, 1);
+        const idx = board[columnId].findIndex(c => c.id === card.id);
+        if (idx !== -1) board[columnId].splice(idx, 1);
         editingCard.value = null;
       } catch (error) {
         console.error("Error deleting card:", error);
@@ -379,32 +373,35 @@ createApp({
 
     function addColumn() {
       const name = newColumnName.value.trim();
-      if (name && !(name in board)) {
-        board[name] = [];
-        newCard[name] = { title: "", isAdding: false };
-        columns.value.push(name);
-        newColumnName.value = "";
-        nextTick(() => {
-          initSortable(name);
-        });
+      if (name) {
+        const id = name.toLowerCase().replace(/\s+/g, '-');
+        if (!board[id]) {
+          board[id] = [];
+          newCard[id] = { title: "", isAdding: false };
+          columns.value.push({ id, label: name });
+          newColumnName.value = "";
+          nextTick(() => {
+            initSortable(id);
+          });
+        }
       }
     }
 
-    function removeColumn(column) {
-      if (board[column].length === 0 && columns.value.length > 1) {
-        delete board[column];
-        delete newCard[column];
-        const index = columns.value.indexOf(column);
+    function removeColumn(columnId) {
+      if (board[columnId] && board[columnId].length === 0 && columns.value.length > 1) {
+        delete board[columnId];
+        delete newCard[columnId];
+        const index = columns.value.findIndex(col => col.id === columnId);
         if (index !== -1) columns.value.splice(index, 1);
       }
     }
 
-    function canRemoveColumn(column) {
-      return board[column].length === 0 && columns.value.length > 1;
+    function canRemoveColumn(columnId) {
+      return board[columnId] && board[columnId].length === 0 && columns.value.length > 1;
     }
 
-    function initSortable(column) {
-      new Sortable(document.getElementById(`list-${column}`), {
+    function initSortable(columnId) {
+      new Sortable(document.getElementById(`list-${columnId}`), {
         group: 'kanban',
         animation: 150,
         ghostClass: 'ghost-card',
@@ -439,7 +436,7 @@ createApp({
     return {
       columns, board, newCard, addCard, openCard, closeEditor, editingCard,
       startAdding, cancelAdd, newColumnName, addColumn, removeColumn, canRemoveColumn,
-      saveCard, updateCard, deleteCard
+      createCard, updateCard, deleteCard
     };
   }
 }).mount("#app");

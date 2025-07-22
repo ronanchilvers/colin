@@ -27,7 +27,9 @@ $routes = [
 
     // Card API
     // 'GET /api/card/@id' => new \App\Actions\Api\Card\Index(),
-    'POST /api/card/@id' => new \App\Actions\Api\Card\Update(),
+    'POST /api/card' => new \App\Actions\Api\Card\Create(),
+    'PUT /api/card/@id' => new \App\Actions\Api\Card\Update(),
+    'DELETE /api/card/@id' => new \App\Actions\Api\Card\Delete(),
 ];
 foreach ($routes as $endpoint => $action) {
     Flight::route(
@@ -35,13 +37,5 @@ foreach ($routes as $endpoint => $action) {
         $action
     );
 }
-// Flight::route(
-//     "/api/board",
-//     new \App\Actions\Api\Board\Index()
-// );
-// Flight::route(
-//     "/api/board",
-//     new \App\Actions\Api\Board\Index()
-// );
 
 Flight::start();
