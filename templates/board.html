@@ -241,7 +241,7 @@
         </div>
         <div class="modal__controls">
           <button @click="closeEditor">Close</button>
-          <button @click="deleteCard(editingCard.column, editingCard.card)">Delete</button>
+          <button @click="deleteCard(boardId.value, editingCard.column, editingCard.card)">Delete</button>
         </div>
       </div>
       <div class="modal__content">
@@ -322,9 +322,9 @@ createApp({
       }
     }
 
-    async function createCard(columnId, card) {
+    async function createCard(boardId, columnId, card) {
       try {
-        const response = await fetch(`/api/card`, {
+        const response = await fetch(`/api/board/${boardId}/card`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ column: columnId, ...card })
@@ -338,9 +338,9 @@ createApp({
       }
     }
 
-    async function updateCard(columnId, card) {
+    async function updateCard(boardId, columnId, card) {
       try {
-        await fetch(`/api/card/${card.id}`, {
+        await fetch(`/api/board/${boardId}/card/${card.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ column: columnId, ...card })
@@ -350,7 +350,7 @@ createApp({
       }
     }
 
-    async function deleteCard(columnId, card) {
+    async function deleteCard(boardId, columnId, card) {
       try {
         await fetch(`/api/card/${card.id}`, {
           method: 'DELETE'
@@ -391,7 +391,7 @@ createApp({
     function addCard(columnId) {
       const title = newCard[columnId].title.trim();
       if (title) {
-        createCard(columnId, { title, content: "" }).then(cardWithId => {
+        createCard(boardId.value, columnId, { title, content: "" }).then(cardWithId => {
           if (cardWithId) {
             board[columnId].push(cardWithId);
           }
@@ -411,7 +411,7 @@ createApp({
 
     function closeEditor() {
       if (editingCard.value) {
-        updateCard(editingCard.value.column, editingCard.value.card);
+        updateCard(boardId.value, editingCard.value.column, editingCard.value.card);
       }
       editingCard.value = null;
     }
@@ -462,7 +462,7 @@ createApp({
           const index = evt.oldIndex;
           const movedCard = board[oldCol].splice(index, 1)[0];
           board[newCol].splice(evt.newIndex, 0, movedCard);
-          updateCard(newCol, movedCard);
+          updateCard(boardId.value, newCol, movedCard);
         }
       });
     }

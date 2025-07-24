@@ -35,6 +35,33 @@ class Connection
         return $stmt->fetch(PDO::FETCH_NAMED);
     }
 
+    public function update(
+        string $table,
+        array $records,
+        string $where,
+        array $params,
+    ) {
+        $this->connect();
+        $fields = [];
+        foreach ($records as $field => $value) {
+            $fields[] = "{$field} = :{$field}";
+        }
+        $sql = sprintf(
+            "UPDATE %s
+             SET %s
+             WHERE %s",
+            $table,
+            implode(', ', $fields),
+            $where
+        );
+        $records += $params;
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($records);
+
+        return true;
+    }
+
     public function insert(string $table, array $records): bool
     {
         $this->connect();
