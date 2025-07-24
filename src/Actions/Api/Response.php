@@ -6,10 +6,11 @@ namespace App\Actions\Api;
 
 class Response
 {
-    const CODE_OK = 0;
-    const CODE_ID_INVALID = 100;
-    const CODE_ID_MISMATCH = 101;
-    const CODE_INVALID_DATA = 102;
+    const CODE_OK           = 0;
+    const CODE_ERROR        = 100;
+    const CODE_ID_INVALID   = 101;
+    const CODE_ID_MISMATCH  = 102;
+    const CODE_INVALID_DATA = 103;
 
     protected $ok = true;
     protected $error = false;
@@ -33,7 +34,7 @@ class Response
     {
         $this->ok = false;
         $this->error = $error;
-        $this->code = $code ?? static::CODE_INVALID_DATA;
+        $this->code = $code ?? static::CODE_ERROR;
 
         return $this;
     }

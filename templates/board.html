@@ -190,15 +190,15 @@
   </style>
 </head>
 <body>
-    <header>
-        <h1>Kanban board</h1>
-    </header>
 <div id="app">
+  <header>
+      <h1>{{ boardTitle }}</h1>
+  </header>
   <div id="column-container" class="board">
     <div class="column" v-for="column in columns" :key="column.id">
       <div class="column__header">
         <h2 class="handle">
-            {{ column.label }}
+            {{ column.title }}
         </h2>
         <div class="column__control">
             <button v-if="canRemoveColumn(column.id)" @click="removeColumn(column.id)" class="control__remove">X</button>
@@ -259,6 +259,7 @@ const { createApp, reactive, ref, onMounted, nextTick } = Vue;
 createApp({
   setup() {
     const boardId = ref(null);
+    const boardTitle = ref("Board");
     const board = reactive({});
 
     const columns = ref([]);
@@ -274,10 +275,13 @@ createApp({
         if (!response.ok) throw new Error("Failed to fetch board data");
         const data = await response.json();
 
-        if (data.board.columns && data.board.board) {
+        if (data.board.board) {
+          boardTitle.value = data.board.board.title;
+        }
+        if (data.board.columns && data.board.cards) {
           columns.value = data.board.columns;
           columns.value.forEach(col => {
-            board[col.id] = data.board.board[col.id] || [];
+            board[col.id] = data.board.cards[col.id] || [];
             newCard[col.id] = { title: "", isAdding: false };
           });
         }
@@ -291,7 +295,7 @@ createApp({
 
     async function createColumn(boardId, column) {
       try {
-        const response = await fetch(`/api/column`, {
+        const response = await fetch(`/api/board/${boardId}/column`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ board: boardId, ...column })
@@ -299,6 +303,19 @@ createApp({
         if (!response.ok) throw new Error("Failed to save column");
         const result = await response.json();
         return { ...column, id: result.column.id };
+      } catch (error) {
+        console.error("Error saving column:", error);
+        return null;
+      }
+    }
+
+    async function deleteColumn(boardId, columnId) {
+      try {
+        const response = await fetch(`/api/board/${boardId}/column/${columnId}`, {
+          method: 'DELETE'
+        });
+        if (!response.ok) throw new Error("Failed to delete column");
+        return true;
       } catch (error) {
         console.error("Error saving column:", error);
         return null;
@@ -335,12 +352,26 @@ createApp({
 
     async function deleteCard(columnId, card) {
       try {
-        await fetch(`/api/card/${card.id}`, { method: 'DELETE' });
+        await fetch(`/api/card/${card.id}`, {
+          method: 'DELETE'
+        });
         const idx = board[columnId].findIndex(c => c.id === card.id);
         if (idx !== -1) board[columnId].splice(idx, 1);
         editingCard.value = null;
       } catch (error) {
         console.error("Error deleting card:", error);
+      }
+    }
+
+    async function updateColumnOrder(boardId, columns) {
+      try {
+        await fetch(`/api/board/${boardId}/column/order`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: columns.map(col => col.id) })
+        });
+      } catch (error) {
+        console.error("Error updating column order:", error);
       }
     }
 
@@ -386,14 +417,14 @@ createApp({
     }
 
     function addColumn() {
-      const name = newColumnLabel.value.trim();
-      if (name) {
-        createColumn(boardId.value, { label: name}).then(columnWithId => {
+      const title = newColumnLabel.value.trim();
+      if (title) {
+        createColumn(boardId.value, { title: title}).then(columnWithId => {
           const id = columnWithId.id
           if (!board[id]) {
             board[id] = [];
             newCard[id] = { title: "", isAdding: false };
-            columns.value.push({ id, label: name });
+            columns.value.push({ id, title: title });
             newColumnLabel.value = "";
             nextTick(() => {
               initSortable(id);
@@ -405,10 +436,13 @@ createApp({
 
     function removeColumn(columnId) {
       if (board[columnId] && board[columnId].length === 0 && columns.value.length > 1) {
-        delete board[columnId];
-        delete newCard[columnId];
-        const index = columns.value.findIndex(col => col.id === columnId);
-        if (index !== -1) columns.value.splice(index, 1);
+        deleteColumn(boardId.value, columnId).then(result => {
+          delete board[columnId];
+          delete newCard[columnId];
+          const index = columns.value.findIndex(col => col.id === columnId);
+          if (index !== -1) columns.value.splice(index, 1);
+          return true;
+        });
       }
     }
 
@@ -447,12 +481,13 @@ createApp({
         onEnd(evt) {
           const moved = columns.value.splice(evt.oldIndex, 1)[0];
           columns.value.splice(evt.newIndex, 0, moved);
+          updateColumnOrder(boardId.value, columns.value);
         }
       });
     });
 
     return {
-      columns, board, newCard, addCard, openCard, closeEditor, editingCard,
+      columns, boardTitle, board, newCard, addCard, openCard, closeEditor, editingCard,
       startAdding, cancelAdd, newColumnLabel, addColumn, removeColumn, canRemoveColumn,
       createCard, updateCard, deleteCard
     };

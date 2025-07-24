@@ -10,7 +10,7 @@ use App\Actions\Api\Response;
 use Exception;
 use App\Actions\Traits\HasConnection;
 
-class Create
+class Order
 {
     use HasConnection;
 
@@ -19,7 +19,7 @@ class Create
         $response = new Response();
         try {
             $data = Flight::request()->data;
-            if (empty($data)) {
+            if (empty($data) || !isset($data['order'])) {
                 Flight::jsonHalt(
                     $response
                         ->withError("Column data is invalid")
@@ -27,26 +27,23 @@ class Create
                 );
             }
             $board = Flight::get('board');
-            $uuid = Uuid::uuid7()->toString();
-            $records = [
-                'column_uuid' => $uuid,
-                'column_board' => $board['board_id'],
-                'column_title' => $data['title'],
-            ];
+            $orderedColumns = '"' . implode('", "', $data['order']) . '"';
             $this
                 ->connection()
-                ->insert(
-                    'columns',
-                    $records
+                ->query('SET @i = 0');
+            $this
+                ->connection()
+                ->query(
+                    "UPDATE columns SET column_position = (@i := @i + 1)
+                    WHERE
+                        column_board = :board
+                        AND column_uuid IN ({$orderedColumns})
+                    ORDER BY FIELD(column_uuid, {$orderedColumns})",
+                    ['board' => $board['board_id']]
                 );
 
             Flight::jsonHalt(
-                $response->withPayload(
-                    'column', [
-                        'id' => $uuid,
-                        'title' => $data['title'],
-                    ]
-                )->toArray()
+                $response->toArray()
             );
         } catch (Exception $ex) {
             Flight::jsonHalt(

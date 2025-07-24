@@ -10,43 +10,31 @@ use App\Actions\Api\Response;
 use Exception;
 use App\Actions\Traits\HasConnection;
 
-class Create
+class Delete
 {
     use HasConnection;
 
-    public function __invoke($board)
+    public function __invoke($board, $column)
     {
         $response = new Response();
         try {
-            $data = Flight::request()->data;
-            if (empty($data)) {
-                Flight::jsonHalt(
-                    $response
-                        ->withError("Column data is invalid")
-                        ->toArray()
-                );
-            }
+            $uuid = Uuid::fromString($column);
             $board = Flight::get('board');
-            $uuid = Uuid::uuid7()->toString();
+            $where = "column_board = :column_board and column_uuid = :column_uuid";
             $records = [
-                'column_uuid' => $uuid,
+                'column_uuid' => $uuid->toString(),
                 'column_board' => $board['board_id'],
-                'column_title' => $data['title'],
             ];
             $this
                 ->connection()
-                ->insert(
+                ->delete(
                     'columns',
+                    $where,
                     $records
                 );
 
             Flight::jsonHalt(
-                $response->withPayload(
-                    'column', [
-                        'id' => $uuid,
-                        'title' => $data['title'],
-                    ]
-                )->toArray()
+                $response->toArray()
             );
         } catch (Exception $ex) {
             Flight::jsonHalt(

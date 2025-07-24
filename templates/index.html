@@ -17,11 +17,11 @@
       <div class="login-form__content">
         <input
           type="text"
-          name="board_name"
-          placeholder="Board name..."
+          name="board_title"
+          placeholder="Board title..."
           required="required"
-          pattern="\w{3,32}"
-          v-model="boardName">
+          pattern="^[\w\s\-.,!?&amp;'&quot;():]{3,32}$"
+          v-model="boardTitle">
         <div v-if="errorMessage" style="color: red; margin-top: 0.5em;">{{ errorMessage }}</div>
       </div>
       <div class="login-form__footer">
@@ -36,7 +36,7 @@
     createApp({
       data() {
         return {
-          boardName: '',
+          boardTitle: '',
           errorMessage: ''
         }
       },
@@ -50,7 +50,7 @@
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify({
-                name: this.boardName
+                title: this.boardTitle
               })
             });
             const result = await response.json();
