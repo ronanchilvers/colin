@@ -9,4 +9,15 @@ function bind(proxy, selector, eventType = "input") {
     );
 }
 
-export { bind };
+function bindForm(selector, handler, preventDefault = true) {
+    document.addEventListener(
+        "submit",
+        function (event) {
+            if (!event.target.matches(selector)) return;
+            event.preventDefault(true === preventDefault ? true : false);
+            handler(event.target);
+        }
+    )
+}
+
+export { bind, bindForm };
