@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kanban Board</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link href="/css/base.css" rel="stylesheet" />
+  <link href="/css/login.css" rel="stylesheet" />
+</head>
+<body>
+  <div id="app" class="wrapper">
+    <form @submit.prevent="submitForm" class="login-form">
+      <div class="login-form__header">
+
+      </div>
+      <div class="login-form__content">
+        <input
+          type="text"
+          name="board_title"
+          placeholder="Board title..."
+          required="required"
+          pattern="^[\w\s\-.,!?&amp;'&quot;():]{3,32}$"
+          v-model="boardTitle">
+        <div v-if="errorMessage" style="color: red; margin-top: 0.5em;">{{ errorMessage }}</div>
+      </div>
+      <div class="login-form__footer">
+        <button type="submit" class="ok">Create</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="/js/vue.js"></script>
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          boardTitle: '',
+          errorMessage: ''
+        }
+      },
+      methods: {
+        async submitForm() {
+          this.errorMessage = '';
+          try {
+            const response = await fetch('/api/board', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                title: this.boardTitle
+              })
+            });
+            const result = await response.json();
+            if (response.ok) {
+              window.location.href = `/board/${result.board.id}`;
+            } else {
+              this.errorMessage = result.error || 'Failed to create board.';
+            }
+          } catch (error) {
+            this.errorMessage = 'Network error: ' + error.message;
+          }
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
