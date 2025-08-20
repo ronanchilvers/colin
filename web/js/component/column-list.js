@@ -1,18 +1,20 @@
-import { component } from '/js/vendor/reef.es.min.js';
-import { store } from '/js/util/store.js';
+import { signal, component } from '/js/vendor/reef.es.min.js';
 
 class ColumnList extends HTMLElement
 {
+    signal = signal({
+        columns: []
+    });
     constructor () {
         super();
         component(
             this,
-            this.template
+            this.template.bind(this)
         )
     }
 
     template () {
-        let { columns } = store;
+        let { columns } = this.signal;
         let html = "";
         columns.forEach((column) => {
             let {id, title} = column;
@@ -31,44 +33,3 @@ customElements.define(
     'column-list',
     ColumnList
 );
-
-// let data = signal({
-//     columns: [
-//         {
-//             id: "col1",
-//             title: "Column 1",
-//         },
-//         {
-//             id: "col2",
-//             title: "Column 2",
-//         },
-//         {
-//             id: "col3",
-//             title: "Column 3",
-//         },
-//     ],
-//     cards: {
-//         col1: [
-//             {
-//                 id: "card1",
-//                 title: "Card 1",
-//             },
-//             {
-//                 id: "card2",
-//                 title: "Card 3",
-//             }
-//         ],
-//         col2: [
-//             {
-//                 id: "card2",
-//                 title: "Card 2",
-//             },
-//         ],
-//         col3: [
-//             {
-//                 id: "card3",
-//                 title: "Card 3",
-//             }
-//         ]
-//     }
-// });

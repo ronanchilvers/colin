@@ -1,4 +1,4 @@
-import { component } from '/js/vendor/reef.es.min.js';
+import { component, signal } from '/js/vendor/reef.es.min.js';
 import { store } from '/js/util/store.js';
 
 class ColumnElement extends HTMLElement
@@ -11,28 +11,41 @@ class ColumnElement extends HTMLElement
 
     constructor () {
         super();
-        this.columnId = null;
+        this._id = null;
+        this.uuid = crypto.randomUUID();
+        this.signal = signal({
+            title: null,
+            cards: []
+        }, this.uuid);
         component(
             this,
-            this.template.bind(this)
+            this.template.bind(this),
+            {
+                signals: [this.uuid],
+            }
         )
     }
 
-    connectedCallback() {
-        console.log("Connected " + this.columnId);
-    }
+    // connectedCallback() {
+    //     console.log("ColumnElement : Connected " + this._id);
+    // }
 
     attributeChangedCallback(name, oldValue, newValue) {
-        if (name == "id") {
-            this.columnId = newValue;
+        if (name === "id") {
+            this._id = newValue;
         }
     }
 
+    setTitle(title) {
+        // console.log('ColumnElement: setTitle(' + title + ')');
+        this.signal.title = title;
+    }
+
     template () {
-        console.log("render " + this.columnId);
-        let { title, cards } = store.columns.find(col => col.id === this.columnId);
+        // console.log("ColumnElement : render " + this._id);
+        let { title, cards } = this.signal;
         return `
-        <div class="column">
+        <div class="column" id="col-${this._id}">
             <div class="column__header">
                 <h2 class="handle">
                     ${title}

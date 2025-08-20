@@ -1,5 +1,4 @@
-import { component } from '/js/vendor/reef.es.min.js';
-import { store } from '/js/util/store.js';
+import { signal, component } from '/js/vendor/reef.es.min.js';
 
 class CardElement extends HTMLElement
 {
@@ -11,25 +10,37 @@ class CardElement extends HTMLElement
 
     constructor () {
         super();
-        this.cardId = null;
+        this._id = null;
+        this.uuid = crypto.randomUUID();
+        this.signal = signal({
+            title: null,
+        }, this.uuid);
         component(
             this,
-            this.template.bind(this)
+            this.template.bind(this),
+            {
+                signals: [this.uuid],
+            }
         )
+    }
+
+    setTitle(title) {
+        // console.log('ColumnElement: setTitle(' + title + ')');
+        this.signal.title = title;
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name == "id") {
-            this.cardId = newValue;
+            this._id = newValue;
         }
     }
 
     template () {
-        let card = store.cards[this.cardId];
+        let { title } = this.signal;
         return `
-        <div class="card">
+        <div class="card" id="card-${this._id}">
             <div class="card__header">
-                <h3>${card.title}</h3>
+                <h3>${title}</h3>
             </div>
         </div>
         `;
