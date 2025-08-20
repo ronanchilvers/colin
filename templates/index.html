@@ -6,11 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <link href="/css/base.css" rel="stylesheet" />
+  <link href="/css/board.css" rel="stylesheet" />
 </head>
 <body>
-  <div id="app"><login-form /></div>
+  <!-- <div id="app"><login-form /></div> -->
+  <div id="app">
+    <board-header></board-header>
+    <column-list></column-list>
+  </div>
+  <script type="module" src="/js/util/store.js"></script>
   <script type="module" src="/js/component/login-form.js"></script>
   <script type="module" src="/js/component/board-header.js"></script>
+  <script type="module" src="/js/component/column-list.js"></script>
+  <script type="module" src="/js/component/column-element.js"></script>
+  <script type="module" src="/js/component/card-element.js"></script>
   <script type="module" src="/js/app.js"></script>
 </body>
 </html>

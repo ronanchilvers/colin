@@ -60,6 +60,6 @@ bind(
 bindForm(
     '#js-login-form',
     function (form) {
-        document.querySelector("#app").innerHTML = `<board-header></board-header>`;
+        document.querySelector("#app").innerHTML = `<board-header /><board-element />`;
     }
 );
