@@ -21,6 +21,11 @@ class BoardHeader extends HTMLElement
         );
     }
 
+    setTitle(title) {
+        // console.log('BoardHeader: setTitle(' + title + ')');
+        this.signal.title = title;
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === "title") {
             // console.log('BoardHeader: attributeChangedCallback', name, oldValue, newValue);

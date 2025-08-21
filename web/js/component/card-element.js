@@ -38,7 +38,7 @@ class CardElement extends HTMLElement
     template () {
         let { title } = this.signal;
         return `
-        <div class="card" id="card-${this._id}">
+        <div class="card" id="card${this._id}">
             <div class="card__header">
                 <h3>${title}</h3>
             </div>

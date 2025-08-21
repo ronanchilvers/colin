@@ -45,7 +45,7 @@ class ColumnElement extends HTMLElement
         // console.log("ColumnElement : render " + this._id);
         let { title, cards } = this.signal;
         return `
-        <div class="column" id="col-${this._id}">
+        <div class="column" id="col${this._id}">
             <div class="column__header">
                 <h2 class="handle">
                     ${title}
