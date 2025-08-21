@@ -1,13 +1,12 @@
 class Api {
     constructor() {
-        this.baseUrl = '/api';
     }
 
     async loadBoard(id) {
         return this.request('GET', `/board/${id}`);
     }
 
-    async addColumn(boardId, column) {
+    async createColumn(boardId, column) {
         return this.request('POST', `/board/${boardId}/column`, column);
     }
 
@@ -15,7 +14,7 @@ class Api {
         return this.request('DELETE', `/board/${boardId}/column/${columnId}`);
     }
 
-    async addCard(boardId, columnId, card) {
+    async createCard(boardId, columnId, card) {
         return this.request('POST', `/board/${boardId}/column/${columnId}/card`, card);
     }
 
@@ -36,7 +35,7 @@ class Api {
             options.body = JSON.stringify(data);
         }
 
-        const response = await fetch(`${this.baseUrl}${path}`, options);
+        const response = await fetch(`/api${path}`, options);
         return this.handleResponse(response);
     }
 

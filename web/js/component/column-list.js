@@ -13,6 +13,20 @@ class ColumnList extends HTMLElement
         )
     }
 
+    connectedCallback () {
+        this.addEventListener('submit', (e) => {
+            if (e.target.matches('.js-add-column-form')) {
+                e.preventDefault();
+                const input = e.target.querySelector('input');
+                const title = input.value.trim();
+                if (title) {
+                    window.board.createColumn(title);
+                    input.value = '';
+                }
+            }
+        });
+    }
+
     template () {
         let { columns } = this.signal;
         let html = "";
@@ -24,6 +38,11 @@ class ColumnList extends HTMLElement
         return `
         <div id="column_container" class="board">
             ${html}
+            <div class="column add-column">
+                <form class="js-add-column-form column__header">
+                    <input placeholder="Add a column..."/>
+                </form>
+            </div>
         </div>
         `;
     }

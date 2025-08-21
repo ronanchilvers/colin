@@ -7,13 +7,13 @@ class Board {
         // this.header = document.querySelector(headerSelector);
         this.api = api;
         this.id = id;
-        this.containerSelector = containerSelector;
+        this.containerSelector = '#column_container';
+        // this.containerSelector = '#columns';
     }
 
     async load() {
         // Load the initial board data with `GET /api/board/{id}`
         const boardData = await this.api.loadBoard(this.id);
-        const boardHeader = document.querySelector('board-header');
         let { board, columns, cards } = boardData.board;
         this.updateBoardHeader(board.title);
         columns.forEach(column => {
@@ -39,18 +39,47 @@ class Board {
         headerEl.setTitle(title);
     }
 
+    async createColumn(title) {
+        const data = await this.api.createColumn(
+            this.id,
+            {
+                title: title
+            }
+        );
+        let { column } = data;
+        this.addColumn(
+            column.id,
+            column.title
+        );
+    }
+
     addColumn(id, title) {
-        const container = document.querySelector(this.containerSelector);
-        if (!container) return;
+        const containerEl = document.querySelector(this.containerSelector);
+        const addColumnEl = document.querySelector(this.containerSelector + " .add-column");
+        if (!containerEl || !addColumnEl) return;
         const col = document.createElement('column-element');
         col.setAttribute('id', id);
         col.setTitle(title);
-        container.appendChild(col);
+        containerEl.insertBefore(col, addColumnEl);
+    }
+
+    async createCard(columnId, title) {
+        const data = await this.api.createCard(
+            this.id,
+            {
+                column: columnId,
+                title: title
+            }
+        );
+        let { card } = data;
+        this.addCard(
+            card.id,
+            card.title
+        );
     }
 
     async addCard(id, columnId, title) {
         const cardList = await waitFor('#col' + columnId + ' .card-list');
-        console.log(cardList);
         if (!cardList) return;
         const card = document.createElement('card-element');
         card.setAttribute('id', id);

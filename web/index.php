@@ -30,17 +30,43 @@ Flight::route('GET /board/@board', [\App\Actions\Board::class, '__invoke']);
 
 Flight::group(
     '', function () {
-        Flight::route('GET /api/board/@board', [ \App\Actions\Api\Board\Index::class , '__invoke' ]);
-        // Flight::route('PUT ', [ \App\Actions\Api\Board\Update::class , '__invoke' ]);
+        Flight::route(
+            'GET /api/board/@board',
+            [ \App\Actions\Api\Board\Index::class , '__invoke' ]
+        );
+        // Flight::route('PUT ',
+        //     [ \App\Actions\Api\Board\Update::class , '__invoke' ]
+        // );
 
-        Flight::route('POST /api/board/@board/column', [ \App\Actions\Api\Column\Create::class , '__invoke' ]);
-        Flight::route('DELETE /api/board/@board/column/@column', [ \App\Actions\Api\Column\Delete::class , '__invoke' ]);
-        Flight::route('PUT /api/board/@board/column/order', [ \App\Actions\Api\Column\Order::class , '__invoke' ]);
+        Flight::route(
+            'POST /api/board/@board/column',
+            [ \App\Actions\Api\Column\Create::class , '__invoke' ]
+        );
+        Flight::route(
+            'DELETE /api/board/@board/column/@column',
+            [ \App\Actions\Api\Column\Delete::class , '__invoke' ]
+        );
+        Flight::route(
+            'PUT /api/board/@board/column/order',
+            [ \App\Actions\Api\Column\Order::class , '__invoke' ]
+        );
 
-        // Flight::route('GET /api/board/@board/card/@card', [ \App\Actions\Api\Card\Index::class , '__invoke' ]);
-        Flight::route('POST /api/board/@board/card', [ \App\Actions\Api\Card\Create::class , '__invoke' ]);
-        Flight::route('PUT /api/board/@board/card/@card', [ \App\Actions\Api\Card\Update::class , '__invoke' ]);
-        Flight::route('DELETE /api/board/@board/card/@card', [ \App\Actions\Api\Card\Delete::class , '__invoke' ]);
+        // Flight::route(
+        //     'GET /api/board/@board/card/@card',
+        //     [ \App\Actions\Api\Card\Index::class , '__invoke' ]
+        // );
+        Flight::route(
+            'POST /api/board/@board/card',
+            [ \App\Actions\Api\Card\Create::class , '__invoke' ]
+        );
+        Flight::route(
+            'PUT /api/board/@board/card/@card',
+            [ \App\Actions\Api\Card\Update::class , '__invoke' ]
+        );
+        Flight::route(
+            'DELETE /api/board/@board/card/@card',
+            [ \App\Actions\Api\Card\Delete::class , '__invoke' ]
+        );
     }, [
         \App\Middleware\Board::class,
     ]
