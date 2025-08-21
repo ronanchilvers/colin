@@ -1,23 +1,34 @@
+import { api } from '/js/util/api.js';
+
 class Board {
 
     // constructor(headerSelector, containerSelector) {
     constructor(containerSelector) {
+        console.log(api);
         // this.header = document.querySelector(headerSelector);
         this.containerSelector = containerSelector;
     }
 
+    load(id) {
+        // Load the initial board data with `GET /api/board/{id}`
+    }
+
     addColumn(id, title) {
+        const container = document.querySelector(this.containerSelector);
+        if (!container) return;
         const col = document.createElement('column-element');
         col.setAttribute('id', id);
         col.setTitle(title);
-        document.querySelector(this.containerSelector).appendChild(col);
+        container.appendChild(col);
     }
 
     addCard(id, column, title) {
+        const cardList = document.querySelector('#' + column + ' .card-list');
+        if (!cardList) return;
         const card = document.createElement('card-element');
         card.setAttribute('id', id);
         card.setTitle(title);
-        document.querySelector('#' + column + ' .card-list').appendChild(card);
+        cardList.appendChild(card);
     }
 
     moveCard(id, column) {
