@@ -1,4 +1,5 @@
 import { waitFor } from '/js/util/waitFor.js';
+import { listenFor } from '/js/util/listenFor.js';
 
 class Board {
 
@@ -33,6 +34,13 @@ class Board {
         });
     }
 
+    async setupListeners() {
+        const container = await waitFor(this.containerSelector);
+        listenFor(container, 'colin:column-remove', (e) => {
+            console.log(e.detail.column.id());
+        });
+    }
+
     updateBoardHeader(title) {
         const headerEl = document.querySelector('board-header');
         if (!headerEl) return;
@@ -61,6 +69,10 @@ class Board {
         col.setAttribute('id', id);
         col.setTitle(title);
         containerEl.insertBefore(col, addColumnEl);
+    }
+
+    async removeColumn(id) {
+
     }
 
     async createCard(columnId, title) {

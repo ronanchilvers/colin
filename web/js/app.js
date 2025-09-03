@@ -7,3 +7,4 @@ window.board = new Board(
     '01983ae2-6526-72cd-8ce4-8b91ebd16688'
 );
 window.board.load();
+window.board.setupListeners();

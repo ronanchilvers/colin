@@ -1,22 +1,15 @@
+import CustomElement from '/js/util/custom-element.js';
 import { component, signal } from '/js/vendor/reef.es.min.js';
-import { store } from '/js/util/store.js';
 
-class ColumnElement extends HTMLElement
+class ColumnElement extends CustomElement
 {
-    static get observedAttributes() {
-        return [
-            'id',
-        ];
-    }
-
     constructor () {
         super();
-        this._id = null;
         this.uuid = crypto.randomUUID();
         this.signal = signal({
-            title: null,
-            cards: []
+            title: null
         }, this.uuid);
+        this.cardListWatcher = null;
         component(
             this,
             this.template.bind(this),
@@ -26,36 +19,48 @@ class ColumnElement extends HTMLElement
         )
     }
 
-    // connectedCallback() {
-    //     console.log("ColumnElement : Connected " + this._id);
-    // }
+    setup() {
+        super.setup();
 
-    attributeChangedCallback(name, oldValue, newValue) {
-        if (name === "id") {
-            this._id = newValue;
-        }
+        this.listen(this, 'reef:render', (e) => {
+            this.observe(
+                this.querySelector('.card-list'),
+                'colin:column-card-list'
+            );
+            this.listen(this, 'colin:column-card-list', (e) => {
+                const btn = this.querySelector('.control__remove')
+                console.log(btn);
+                if (btn) {
+                    btn.style.display = (0 === e.detail.observed.children.length) ? 'block' : 'none';
+                }
+            });
+        });
+
+        this.listen(this, 'click', (e) => {
+            e.preventDefault();
+            this.emit('colin:column-remove', {
+                column: this,
+            });
+        }, '.control__remove');
     }
 
     setTitle(title) {
-        // console.log('ColumnElement: setTitle(' + title + ')');
         this.signal.title = title;
     }
 
     template () {
-        // console.log("ColumnElement : render " + this._id);
-        let { title, cards } = this.signal;
+        let { title } = this.signal;
         return `
-        <div class="column" id="col${this._id}">
+        <div class="column" id="col${this.id()}">
             <div class="column__header">
                 <h2 class="handle">
                     ${title}
                 </h2>
                 <div class="column__control">
+                    <button class="control__remove">X</button>
                 </div>
             </div>
-            <div class="column__content card-list">
-                ${cards.map(id => `<card-element id="${id}"></card-element>`).join('')}
-            </div>
+            <div class="column__content card-list"></div>
             <div class="add-card">
                 <div>
                 <input
