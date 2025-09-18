@@ -1,0 +1,168 @@
+name: JS & CSS Lint
+
+on:
+  push:
+    branches: [ "**" ]
+    paths:
+      - "**.js"
+      - "**.mjs"
+      - "**.cjs"
+      - "**.css"
+      - ".github/workflows/js-css-lint.yml"
+  pull_request:
+    branches: [ "**" ]
+    paths:
+      - "**.js"
+      - "**.mjs"
+      - "**.cjs"
+      - "**.css"
+      - ".github/workflows/js-css-lint.yml"
+
+concurrency:
+  group: js-css-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Node ${{ matrix.node }} Lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [ "18.x", "20.x" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Prepare workspace (create temp tool configs)
+        run: |
+          set -e
+          # Create an ESLint flat config if none present (ESLint 9+ style)
+          if [ ! -f "eslint.config.mjs" ] && [ ! -f ".eslintrc.js" ] && [ ! -f ".eslintrc.json" ]; then
+            cat > eslint.config.mjs <<'EOF'
+            export default [{
+              files: ["**/*.js","**/*.mjs","**/*.cjs"],
+              ignores: ["vendor/**","**/vendor/**","**/node_modules/**","**/*.min.js"],
+              languageOptions: {
+                ecmaVersion: "latest",
+                sourceType: "module",
+              },
+              linterOptions: {
+                reportUnusedDisableDirectives: true
+              },
+              rules: {
+                "no-unused-vars": ["warn", {"args":"none","ignoreRestSiblings":true}],
+                "no-undef": "error",
+                "no-unexpected-multiline": "error",
+                "no-constant-condition": ["warn", {"checkLoops": false}],
+                "no-debugger": "warn",
+                "no-console": ["warn", {"allow":["warn","error"]}],
+                "eqeqeq": ["error","smart"],
+                "curly": ["error","all"]
+              }
+            }];
+            EOF
+          fi
+          # Create a Stylelint config if none present
+          if [ ! -f ".stylelintrc.json" ]; then
+            cat > .stylelintrc.json <<'EOF'
+            {
+              "extends": ["stylelint-config-standard"],
+              "ignoreFiles": [
+                "**/vendor/**",
+                "**/node_modules/**",
+                "**/*.min.css"
+              ],
+              "rules": {
+                "color-hex-length": "short",
+                "no-descending-specificity": null
+              }
+            }
+            EOF
+          fi
+
+      - name: Install lint dependencies
+        run: |
+          set -e
+          # Initialize minimal package if missing
+            if [ ! -f package.json ]; then
+              npm init -y >/dev/null 2>&1
+            fi
+          npm install --no-audit --no-fund --save-dev \
+            eslint@^9 \
+            stylelint@^16 \
+            stylelint-config-standard@^36
+
+      - name: Show tool versions
+        run: |
+          node -v
+          npx eslint -v
+          npx stylelint --version
+
+      - name: Collect target files
+        id: files
+        run: |
+          JS_COUNT=$(find web/js -type f \( -name "*.js" -o -name "*.mjs" -o -name "*.cjs" \) ! -path "*/vendor/*" ! -name "*.min.js" | wc -l || echo 0)
+          CSS_COUNT=$(find web/css -type f -name "*.css" ! -name "*.min.css" | wc -l || echo 0)
+          echo "js_count=$JS_COUNT" >> $GITHUB_OUTPUT
+          echo "css_count=$CSS_COUNT" >> $GITHUB_OUTPUT
+          echo "JavaScript files: $JS_COUNT"
+          echo "CSS files: $CSS_COUNT"
+
+      - name: Fail early if no source files
+        if: steps.files.outputs.js_count == '0' && steps.files.outputs.css_count == '0'
+        run: |
+          echo "No JS or CSS files detected to lint. Failing to avoid false positives."
+          exit 1
+
+      - name: Syntax check (Node parser) for JS
+        if: steps.files.outputs.js_count != '0'
+        run: |
+          set -e
+          echo "Performing Node syntax verification..."
+          FAIL=0
+          while IFS= read -r -d '' FILE; do
+            if ! node --check "$FILE" >/dev/null 2>&1; then
+              echo "Syntax error in $FILE"
+              node --check "$FILE" || true
+              FAIL=1
+            fi
+          done < <(find web/js -type f \( -name "*.js" -o -name "*.mjs" -o -name "*.cjs" \) ! -path "*/vendor/*" ! -name "*.min.js" -print0)
+          if [ "$FAIL" -ne 0 ]; then
+            echo "JavaScript syntax errors found."
+            exit 1
+          fi
+          echo "JavaScript syntax OK."
+
+      - name: ESLint
+        if: steps.files.outputs.js_count != '0'
+        run: |
+          set -e
+          npx eslint web/js --max-warnings=0
+
+      - name: Stylelint
+        if: steps.files.outputs.css_count != '0'
+        run: |
+          set -e
+          npx stylelint "web/css/**/*.css"
+
+      - name: Report summary
+        if: success()
+        run: |
+          echo "✅ All linting and syntax checks passed on Node ${{ matrix.node }}"
+
+      - name: Report failure
+        if: failure()
+        run: |
+          echo "❌ Linting failed on Node ${{ matrix.node }}"
+          exit 1
