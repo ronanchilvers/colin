@@ -1,6 +1,7 @@
 {
     "name": "ronanchilvers/colin",
     "description": "A simple kanban board experiment",
+    "license": "mit",
     "autoload": {
         "psr-4": {
             "App\\": "src/"
