@@ -1,5 +1,5 @@
 {
-    "name": "Colin - Kanban Experiment",
+    "name": "ronanchilvers/colin",
     "description": "A simple kanban board experiment",
     "autoload": {
         "psr-4": {
