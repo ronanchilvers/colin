@@ -4,16 +4,20 @@ declare(strict_types=1);
 
 namespace App\Actions\Api\Board;
 
+use App\Actions\Api\Response;
+use App\Actions\Traits\HasConnection;
+use Exception;
 use Flight;
 use Ramsey\Uuid\Uuid;
-use App\Actions\Traits\HasConnection;
-use App\Actions\Api\Response;
 
 class Create
 {
     use HasConnection;
 
-    public function __invoke()
+    /**
+     * @return void
+     */
+    public function __invoke(): void
     {
         $response = new Response();
         try {
@@ -35,7 +39,8 @@ class Create
             );
 
             $response->withPayload(
-                'board', [
+                'board',
+                [
                     'id' => $uuid,
                     'title' => $title,
                 ]

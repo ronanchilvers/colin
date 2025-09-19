@@ -19,7 +19,6 @@ $config = include_once __DIR__ . '/../config/config.php';
 Factory::setBaseDir(__DIR__ . '/../templates');
 
 $container = new Container();
-// $container->set('config', $config);
 require_once __DIR__ . '/../config/services.php';
 
 Flight::registerContainerHandler([$container, 'get']);
@@ -29,7 +28,8 @@ Flight::route('GET /', [ \App\Actions\Index::class , '__invoke' ]);
 Flight::route('GET /board/@board', [\App\Actions\Board::class, '__invoke']);
 
 Flight::group(
-    '', function () {
+    '',
+    function () {
         Flight::route(
             'GET /api/board/@board',
             [ \App\Actions\Api\Board\Index::class , '__invoke' ]
@@ -67,12 +67,16 @@ Flight::group(
             'DELETE /api/board/@board/card/@card',
             [ \App\Actions\Api\Card\Delete::class , '__invoke' ]
         );
-    }, [
+    },
+    [
         \App\Middleware\Board::class,
     ]
 );
 
-Flight::route('POST /api/board', [ \App\Actions\Api\Board\Create::class , '__invoke' ]);
+Flight::route(
+    'POST /api/board',
+    [ \App\Actions\Api\Board\Create::class , '__invoke' ]
+);
 
 // $boardRoutes = [
 //     // Frontend

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Middleware;
 
+use App\Actions\Api\Response;
 use App\Actions\Traits\HasConnection;
 use Ramsey\Uuid\Uuid;
 use Flight;
@@ -13,7 +14,11 @@ class Board
 {
     use HasConnection;
 
-    public function before($params)
+    /**
+     * @return void
+     * @param mixed $params
+     */
+    public function before($params): void
     {
         if (isset($params['board']) && Uuid::isValid($params['board'])) {
             try {
@@ -25,7 +30,12 @@ class Board
                     Flight::set('board', $board);
                 }
             } catch (Exception $ex) {
-
+                Flight::jsonHalt(
+                    (new Response())
+                        ->withError('Board not found')
+                        ->toArray(),
+                    404
+                );
             }
         }
     }
