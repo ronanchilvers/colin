@@ -8,9 +8,9 @@ This document is written for an autonomous AI agent (engineering assistant) to q
 
 A lightweight Kanban board web app:
 - Backend: PHP (Flight micro-framework + simple DI container)
-- Frontend: Two partially overlapping implementations:
-  1. Custom Web Components + Reef (signals-based rendering) (`/web/js/component/*`, `index.html`)
-  2. Vue-style imperative app (`/web/js/board.js`, used with `board.html`)
+- Frontend: Web Components + Reef (signals-based rendering) (single active implementation)
+  (Legacy Vue implementation removed; references cleaned up)
+
 - Persistence: MySQL (schema + triggers + sample data in `/sql`)
 - Templates: Lightweight custom template system (`App\Template` + `Factory`)
 
@@ -35,8 +35,8 @@ The project appears mid-refactor: duplication, unused code paths, and API/JS mis
   - `ActionInterface.php` – (Not widely enforced; most actions just define `__invoke`)
   - `Middleware/Board.php` – Preloads a board row (makes it available via `Flight::get('board')`)
 - `templates/` – Raw HTML templates (no server-side variable interpolation beyond inclusion)
-- `web/js/` – Frontend assets (two paradigms coexist)
-  - `board.js` – Uses `Vue` globals (assumes Vue is loaded elsewhere)
+- `web/js/` – Frontend assets (Web Components + Reef only)
+
   - `app.js` + `util/` + `component/` – Reef + custom elements stack
 - `web/css/` – Styling
 - `sql/` – DB schema, triggers, sample dataset, utilities
@@ -104,10 +104,10 @@ Notes:
 - A global `Board` instance (from `util/board.js`) orchestrates adding columns/cards.
 - Relies on `reef.es.min.js` (in `/js/vendor/`—not fully shown here) for signals.
 
-### B. Vue-Like App
-- `templates/board.html` includes inline `<script src="/js/board.js"></script>`
-- Assumes a global `Vue` environment (not present in repo).
-- Implements a more complete interactive Kanban (drag/drop via Sortable library).
+
+
+
+
 - Column and card creation, movement, modal editing.
 
 ### Mismatch / Inconsistencies
@@ -151,7 +151,7 @@ Response envelope: Standardized via `Response` object.
 
 ## 10. Known / Potential Issues (Useful for Agent Task Queue)
 
-1. Frontend duplication: Vue + Reef - choose one.
+1. Frontend now standardized on Web Components + Reef (verify no stale references).
 2. Missing `config/config.php` (only `.dist`). Consider boot-time check.
 3. Hard-coded board UUID in `web/js/app.js`.
 4. Inconsistent API paths between `util/api.js` and server routes.
@@ -174,7 +174,7 @@ Response envelope: Standardized via `Response` object.
 Priority tiers:
 
 High:
-- Unify frontend implementation (pick Vue or Web Components).
+- Frontend unified on Web Components + Reef; continue removing legacy assumptions.
 - Normalize API contract; update JS clients accordingly.
 - Add input validation + sanitation.
 - Introduce consistent exception handling (central error middleware).
@@ -205,7 +205,7 @@ Checklist:
 4. Update `boards` table using `Connection::update()`.
 5. Return JSON using `Response` with updated board payload.
 6. Add route in `web/index.php`.
-7. Update frontend calls (Vue or Reef chosen path).
+7. Update frontend calls where API changes occur (Reef components).
 8. Add basic test (if test harness introduced later).
 
 ---
@@ -262,7 +262,7 @@ Required to run locally:
 
 ## 17. Data Flow Example (Card Creation)
 
-Frontend (Vue):
+Frontend (Reef-based components):
 - User types card title -> triggers `addCard(columnId)`
 - Calls `createCard(boardId, columnId, { title, content })`
 - Sends `POST /api/board/{board}/card` with JSON `{ column: <uuid>, title: "...", content: "" }`
@@ -337,14 +337,77 @@ You can consider the backend stabilized when:
 - Column reorder sanitized.
 
 ---
-
+ 
 ## 25. Contact / Human Handoff Notes
-
+ 
 If you (agent) need higher-level direction:
-- Ask whether to keep Vue or Reef.
+- Frontend paradigm established: Web Components + Reef.
 - Clarify whether multi-user ownership and auth are in scope.
-- Confirm if tests + CI pipeline are a priority.
-
+- Confirm if automated tests (PHPUnit / Playwright) should be introduced next.
+- Determine whether to formalize an API versioning strategy early.
+- Ask whether DB migrations tooling should precede auth features.
+ 
 ---
-
+ 
+## 26. Continuous Integration (Current State)
+ 
+Implemented GitHub Actions workflows:
+- `.github/workflows/php-lint.yml`
+  - Matrix: PHP 8.2 & 8.4
+  - Composer validate, install, autoload optimize
+  - Parallel `php -l` syntax checks
+  - Basic autoload smoke test
+- `.github/workflows/js-css-lint.yml`
+  - Matrix: Node 18.x & 20.x
+  - Ephemeral ESLint (flat config) + Stylelint configs (generated if absent)
+  - Node syntax verification (`node --check`)
+  - Zero-warnings policy for ESLint
+  - Stylelint standard config for CSS
+ 
+Observations:
+- No caching for Node dependencies beyond built‑in setup-node caching of npm (acceptable for now).
+- No artifacts uploaded (OK for lint-only).
+- CI does not yet:
+  - Run application-level tests
+  - Perform static analysis (PHPStan/Psalm)
+  - Enforce code style (PHP-CS-Fixer / Prettier)
+  - Build or package assets
+  - Security scan (Composer audit suppressed; could add `symfony/security-checker` or `roave/security-advisories`)
+ 
+Suggested Near-Term CI Enhancements:
+1. Add PHPStan level 6+ (fail on baseline drift).
+2. Add Psalm (optional if PHPStan sufficient).
+3. Add PHP-CS-Fixer dry-run step (or Laravel Pint) before style adoption.
+4. Add dependency vulnerability scan (e.g., `composer audit || true` with summary).
+5. Introduce a test matrix once tests exist: job `tests` depending on `lint`.
+6. Add `fail-fast: true` only after pipeline stabilizes.
+7. Generate an SBOM (CycloneDX) if supply chain visibility is desired.
+ 
+---
+ 
+## 27. Licensing
+ 
+Project is licensed under MIT (`LICENSE.md`):
+- Permissive reuse allowed
+- Ensure future contributions do not introduce incompatible licensed code
+- When adding third-party assets/scripts manually (non-composer), record origin + license in a new `THIRD_PARTY.md`
+ 
+Actionable:
+- Add a short license badge/reference in a future `README.md`
+- Include license header docblocks only if policy requires (currently omitted for brevity)
+ 
+---
+ 
+## 28. Next Automation Candidates
+ 
+Automation targets now that CI linting exists:
+- Script: `bin/migrate` (apply SQL in order; idempotency guard)
+- OpenAPI draft generation (manual first, later automated validation)
+- Add `make` or `justfile` with targets: `install`, `serve`, `lint`, `phpstan`, `migrate`, `seed`
+- Generate dependency graph (e.g., `composer show --tree > docs/deps.txt`)
+- Add Renovate or Dependabot for dependency update PRs
+- Add commit message linting (Conventional Commits) using a lightweight action
+ 
+---
+ 
 End of AGENT.md
