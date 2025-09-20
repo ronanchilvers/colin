@@ -1,5 +1,5 @@
-import { waitFor } from '/js/util/waitFor.js';
 import { listenFor } from '/js/util/listenFor.js';
+import { waitFor } from '/js/util/waitFor.js';
 
 class Board {
 
@@ -36,8 +36,10 @@ class Board {
 
     async setupListeners() {
         const container = await waitFor(this.containerSelector);
+
+        // Column removal
         listenFor(container, 'colin:column-remove', (e) => {
-            console.log(e.detail.column.id());
+            this.deleteColumn(e.detail.column.id());
         });
     }
 
@@ -54,6 +56,7 @@ class Board {
                 title: title
             }
         );
+        console.log('board.createColumn');
         let { column } = data;
         this.addColumn(
             column.id,
@@ -62,33 +65,44 @@ class Board {
     }
 
     addColumn(id, title) {
-        const containerEl = document.querySelector(this.containerSelector);
         const addColumnEl = document.querySelector(this.containerSelector + " .add-column");
-        if (!containerEl || !addColumnEl) return;
+        if (!document.querySelector(this.containerSelector) || !addColumnEl) return;
         const col = document.createElement('column-element');
         col.setAttribute('id', id);
         col.setTitle(title);
-        containerEl.insertBefore(col, addColumnEl);
+        (document.querySelector(this.containerSelector)).insertBefore(col, addColumnEl);
     }
 
     async removeColumn(id) {
 
     }
 
-    async createCard(columnId, title) {
-        const data = await this.api.createCard(
-            this.id,
-            {
-                column: columnId,
-                title: title
-            }
-        );
-        let { card } = data;
-        this.addCard(
-            card.id,
-            card.title
-        );
+    deleteColumn(id) {
+      this.api.deleteColumn(
+        this.id,
+        id
+      ).then(() => {
+        const colEl = document.querySelector('#col' + id);
+        if (colEl && colEl.parentNode) {
+            colEl.parentNode.remove();
+        }
+      });
     }
+
+    // async createCard(columnId, title) {
+    //     const data = await this.api.createCard(
+    //         this.id,
+    //         {
+    //             column: columnId,
+    //             title: title
+    //         }
+    //     );
+    //     let { card } = data;
+    //     this.addCard(
+    //         card.id,
+    //         card.title
+    //     );
+    // }
 
     async addCard(id, columnId, title) {
         const cardList = await waitFor('#col' + columnId + ' .card-list');
@@ -99,12 +113,12 @@ class Board {
         cardList.appendChild(card);
     }
 
-    moveCard(id, columnId) {
-        const cardEl = document.querySelector('#card' + id);
-        const columnEl = document.querySelector('#col' + columnId + ' .card-list');
-        if (!cardEl || !columnEl) return;
-        columnEl.appendChild(cardEl);
-    }
+    // moveCard(id, columnId) {
+    //     const cardEl = document.querySelector('#card' + id);
+    //     const columnEl = document.querySelector('#col' + columnId + ' .card-list');
+    //     if (!cardEl || !columnEl) return;
+    //     columnEl.appendChild(cardEl);
+    // }
 }
 
 export default Board;

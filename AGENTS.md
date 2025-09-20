@@ -122,7 +122,7 @@ Notes:
 
 Board:
 - `POST /api/board` – create board
-- `GET /api/board/@board` – get full board structure (board + columns + cards)  
+- `GET /api/board/@board` – get full board structure (board + columns + cards)
   (No update/delete)
 
 Column:
@@ -337,20 +337,20 @@ You can consider the backend stabilized when:
 - Column reorder sanitized.
 
 ---
- 
+
 ## 25. Contact / Human Handoff Notes
- 
+
 If you (agent) need higher-level direction:
 - Frontend paradigm established: Web Components + Reef.
 - Clarify whether multi-user ownership and auth are in scope.
 - Confirm if automated tests (PHPUnit / Playwright) should be introduced next.
 - Determine whether to formalize an API versioning strategy early.
 - Ask whether DB migrations tooling should precede auth features.
- 
+
 ---
- 
+
 ## 26. Continuous Integration (Current State)
- 
+
 Implemented GitHub Actions workflows:
 - `.github/workflows/php-lint.yml`
   - Matrix: PHP 8.2 & 8.4
@@ -363,7 +363,7 @@ Implemented GitHub Actions workflows:
   - Node syntax verification (`node --check`)
   - Zero-warnings policy for ESLint
   - Stylelint standard config for CSS
- 
+
 Observations:
 - No caching for Node dependencies beyond built‑in setup-node caching of npm (acceptable for now).
 - No artifacts uploaded (OK for lint-only).
@@ -373,7 +373,7 @@ Observations:
   - Enforce code style (PHP-CS-Fixer / Prettier)
   - Build or package assets
   - Security scan (Composer audit suppressed; could add `symfony/security-checker` or `roave/security-advisories`)
- 
+
 Suggested Near-Term CI Enhancements:
 1. Add PHPStan level 6+ (fail on baseline drift).
 2. Add Psalm (optional if PHPStan sufficient).
@@ -382,24 +382,24 @@ Suggested Near-Term CI Enhancements:
 5. Introduce a test matrix once tests exist: job `tests` depending on `lint`.
 6. Add `fail-fast: true` only after pipeline stabilizes.
 7. Generate an SBOM (CycloneDX) if supply chain visibility is desired.
- 
+
 ---
- 
+
 ## 27. Licensing
- 
+
 Project is licensed under MIT (`LICENSE.md`):
 - Permissive reuse allowed
 - Ensure future contributions do not introduce incompatible licensed code
 - When adding third-party assets/scripts manually (non-composer), record origin + license in a new `THIRD_PARTY.md`
- 
+
 Actionable:
 - Add a short license badge/reference in a future `README.md`
 - Include license header docblocks only if policy requires (currently omitted for brevity)
- 
+
 ---
- 
+
 ## 28. Next Automation Candidates
- 
+
 Automation targets now that CI linting exists:
 - Script: `bin/migrate` (apply SQL in order; idempotency guard)
 - OpenAPI draft generation (manual first, later automated validation)
@@ -407,7 +407,7 @@ Automation targets now that CI linting exists:
 - Generate dependency graph (e.g., `composer show --tree > docs/deps.txt`)
 - Add Renovate or Dependabot for dependency update PRs
 - Add commit message linting (Conventional Commits) using a lightweight action
- 
+
 ---
- 
+
 End of AGENT.md

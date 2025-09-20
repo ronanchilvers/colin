@@ -7,10 +7,11 @@ class Api {
     }
 
     async createColumn(boardId, column) {
+        console.log('api.createColumn');
         return this.request('POST', `/board/${boardId}/column`, column);
     }
 
-    async removeColumn(boardId, columnId) {
+    async deleteColumn(boardId, columnId) {
         return this.request('DELETE', `/board/${boardId}/column/${columnId}`);
     }
 
@@ -18,7 +19,7 @@ class Api {
         return this.request('POST', `/board/${boardId}/column/${columnId}/card`, card);
     }
 
-    async removeCard(boardId, columnId, cardId) {
+    async deleteCard(boardId, columnId, cardId) {
         return this.request('DELETE', `/board/${boardId}/column/${columnId}/card/${cardId}`);
     }
 

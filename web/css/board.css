@@ -95,10 +95,6 @@ input, textarea {
     flex-direction: column;
     justify-content: flex-start;
 }
-.modal__header,
-.modal__content {
-    /* padding: 1rem; */
-}
 .modal__header input,
 .modal__content textarea {
     padding: 0.5rem;
@@ -153,4 +149,7 @@ input, textarea {
 }
 .add-column input {
     color: rgb(255,255,255);
+}
+.add-column input::placeholder {
+    color: rgb(210,210,210);
 }

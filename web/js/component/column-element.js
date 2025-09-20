@@ -23,13 +23,14 @@ class ColumnElement extends CustomElement
         super.setup();
 
         this.listen(this, 'reef:render', (e) => {
+            // Emit a colin:column-card-list event when the column changes
             this.observe(
                 this.querySelector('.card-list'),
                 'colin:column-card-list'
             );
+            // Listen for column changes and hide or show the delete button
             this.listen(this, 'colin:column-card-list', (e) => {
                 const btn = this.querySelector('.control__remove')
-                console.log(btn);
                 if (btn) {
                     btn.style.display = (0 === e.detail.observed.children.length) ? 'block' : 'none';
                 }
