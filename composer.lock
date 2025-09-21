@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "63c53952bc986226db0b78ddf6503432",
+    "content-hash": "786327fc3dd114ad041659c549d544e8",
     "packages": [
         {
             "name": "brick/math",
@@ -398,6 +398,47 @@
             "time": "2025-09-04T20:59:21+00:00"
         },
         {
+            "name": "ronanchilvers/bundler",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ronanchilvers/bundler.git",
+                "reference": "7f6018e15a0135ff0e052faa5e9c277d6e5cecb2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ronanchilvers/bundler/zipball/7f6018e15a0135ff0e052faa5e9c277d6e5cecb2",
+                "reference": "7f6018e15a0135ff0e052faa5e9c277d6e5cecb2",
+                "shasum": ""
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^11.5"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ronanchilvers\\Bundler\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ronan Chilvers",
+                    "email": "ronan@thelittledot.com"
+                }
+            ],
+            "description": "Simple file bundler",
+            "support": {
+                "issues": "https://github.com/ronanchilvers/bundler/issues",
+                "source": "https://github.com/ronanchilvers/bundler/tree/main"
+            },
+            "time": "2025-09-21T15:03:20+00:00"
+        },
+        {
             "name": "ronanchilvers/utility",
             "version": "2.0",
             "source": {
@@ -445,7 +486,9 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "ronanchilvers/bundler": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
