@@ -10,8 +10,10 @@ use Ronanchilvers\Utility\File;
 class Factory
 {
     protected static $baseDir;
-
-    public static function setBaseDir(string $baseDir)
+    /**
+     * @return void
+     */
+    public static function setBaseDir(string $baseDir): void
     {
         if (!is_dir($baseDir)) {
             throw new \Exception(sprintf(

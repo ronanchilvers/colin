@@ -1,0 +1,35 @@
+<?php
+
+use RonanChilvers\Bundler\Bundler;
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Kanban Board</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link href="/css/base.css" rel="stylesheet" />
+        <link href="/css/board.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- <div id="app"><login-form /></div> -->
+        <div id="app">
+            <board-header title="My Board"></board-header>
+            <column-list></column-list>
+        </div>
+        <?= Bundler::stylesheet([
+            "/js/component/board-header.js",
+            "/js/component/column-list.js",
+            "/js/component/column-element.js",
+            "/js/component/card-element.js",
+            "/js/app.js"
+        ]) ?>
+        <script type="module" src="/js/component/board-header.js"></script>
+        <script type="module" src="/js/component/column-list.js"></script>
+        <script type="module" src="/js/component/column-element.js"></script>
+        <script type="module" src="/js/component/card-element.js"></script>
+        <script type="module" src="/js/app.js"></script>
+    </body>
+</html>

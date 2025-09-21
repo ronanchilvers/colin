@@ -26,6 +26,11 @@ class Template
         return $this;
     }
 
+
+
+    /**
+     * @param array<int,mixed> $data
+     */
     public function setData(array $data): void
     {
         $this->data = $data;
@@ -66,8 +71,10 @@ class Template
         include $this->template;
         return ob_get_clean();
     }
-
-    public function renderFile($filename)
+    /**
+     * @param mixed $filename
+     */
+    public function renderFile($filename): int|false
     {
         return file_put_contents(
             $filename,
